@@ -7,7 +7,7 @@
  * (at your option) any later version.
  ********************************************************************************/
 
-import { astAsync } from "@cocreate/utils";
+import { astAsync } from "@cocreate/ast/server";
 
 let server;
 
