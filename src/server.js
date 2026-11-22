@@ -74,7 +74,7 @@ function createSandbox(payload, workflowDefinition, workflowName, organization_i
 			// Nested work returns to its caller without inheriting client reply destinations.
 			for (const field of ["socketId", "clientId", "uuid", "frameId", "replyOrganizationId",
 				"broadcast", "broadcastClient", "broadcastSender", "subscription", "subscriptionKeys",
-				"server", "worker", "cluster", "master", "serverId", "workerId", "clusterId", "response"]) {
+				"server", "worker", "cluster", "primary", "serverId", "workerId", "clusterId", "response"]) {
 				delete child[field];
 			}
 			const result = await execute(child);
