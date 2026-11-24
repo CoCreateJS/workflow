@@ -1,7 +1,7 @@
 import Actions from "@cocreate/actions";
 import Observer from "@cocreate/observer";
 import { SocketClient as Socket } from "@cocreate/socket";
-import { evaluateAsync } from "@cocreate/evaluate/client";
+import { evaluateAsync } from "@cocreate/evaluate";
 import { getData, setData } from "@cocreate/utils";
 
 const registeredWorkflowNames = new Set();

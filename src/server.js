@@ -7,7 +7,7 @@
  * (at your option) any later version.
  ********************************************************************************/
 
-import { evaluateAsync } from "@cocreate/evaluate/server";
+import { evaluateAsync } from "@cocreate/evaluate";
 
 let server;
 
