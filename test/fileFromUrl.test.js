@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import Workflows from '../src/server.js';
+import Workflow from '../src/server.js';
 
 const definition = JSON.parse(fs.readFileSync(new URL('../demo/fileFromUrl.json', import.meta.url), 'utf8'));
 
 async function setup() {
     const sent = [];
     const requests = [];
-    await Workflows.init({
+    await Workflow.init({
         crud: { send: async request => { requests.push(request); return { object: [request.method === "object.read" ? structuredClone(definition) : request.object] }; } },
         send: async envelope => { sent.push(envelope); return envelope; },
         socket: { send() { assert.fail("Workflow must use server.send"); } }
@@ -25,7 +25,7 @@ test('URL workflow preserves bytes, metadata, tenant scope, and the original env
     const { sent, requests } = await setup();
     const file = { src: 'https://example.test/photo.png', name: 'custom.png', path: '/images', custom: 'preserved' };
     const envelope = { method: 'workflow.fileFromUrl', uuid: 'request-1', fileFromUrl: [file], organization_id: 'org', host: 'example.test', socket: { purpose: 'ordinary payload' } };
-    const result = await Workflows.run(envelope);
+    const result = await Workflow.run(envelope);
     assert.equal(result, envelope);
     assert.equal(sent[0], envelope);
     assert.equal(sent.length, 1);
@@ -52,7 +52,7 @@ test('URL workflow preserves bytes, metadata, tenant scope, and the original env
 test('URL workflow derives missing name, MIME type, and path without a second payload', async t => {
     t.mock.method(globalThis, 'fetch', async () => new Response(Uint8Array.of(0, 255)));
     await setup();
-    const response = await Workflows.run({ method: 'workflow.fileFromUrl', organization_id: 'org', host: 'example.test', fileFromUrl: [{ src: 'https://example.test/image.PNG?download=1' }] });
+    const response = await Workflow.run({ method: 'workflow.fileFromUrl', organization_id: 'org', host: 'example.test', fileFromUrl: [{ src: 'https://example.test/image.PNG?download=1' }] });
     assert.deepEqual(response.fileFromUrl, { src: 'AP8=', name: 'image.PNG', size: 2, 'content-type': 'image/png', directory: '/', path: '/', pathname: '/image.PNG', host: 'example.test', headers: { 'cache-control': 'public, max-age=3600' } });
     assert.equal(response.error, undefined);
 });
@@ -60,7 +60,7 @@ test('URL workflow derives missing name, MIME type, and path without a second pa
 test('URL workflow keeps empty files and applies a filename fallback', async t => {
     t.mock.method(globalThis, 'fetch', async () => new Response(new Uint8Array()));
     await setup();
-    const response = await Workflows.run({ method: 'workflow.fileFromUrl', organization_id: 'org', host: 'example.test', fileFromUrl: [{ src: 'https://example.test/' }] });
+    const response = await Workflow.run({ method: 'workflow.fileFromUrl', organization_id: 'org', host: 'example.test', fileFromUrl: [{ src: 'https://example.test/' }] });
     assert.equal(response.fileFromUrl.name, 'downloaded_file');
     assert.equal(response.fileFromUrl.src, '');
     assert.equal(response.fileFromUrl.size, 0);
@@ -72,7 +72,7 @@ test('URL workflow sends HTTP failures on the same envelope without replacing in
     const { sent } = await setup();
     const input = [{ src: 'https://example.test/missing.png' }];
     const envelope = { method: 'workflow.fileFromUrl', fileFromUrl: input, organization_id: 'org', host: 'example.test', socket: { purpose: 'ordinary payload' } };
-    await Workflows.run(envelope);
+    await Workflow.run(envelope);
     assert.deepEqual(envelope.error, ['Failed to fetch file: Not Found']);
     assert.equal(envelope.fileFromUrl, input);
     assert.equal(sent[0], envelope);
@@ -82,25 +82,25 @@ test('URL workflow sends HTTP failures on the same envelope without replacing in
 test('URL workflow validates its URL before fetching', async t => {
     const fetch = t.mock.method(globalThis, 'fetch', async () => { throw new Error('Must not fetch'); });
     await setup();
-    const response = await Workflows.run({ method: 'workflow.fileFromUrl', organization_id: 'org', host: 'example.test', fileFromUrl: [{ src: 'invalid' }] });
+    const response = await Workflow.run({ method: 'workflow.fileFromUrl', organization_id: 'org', host: 'example.test', fileFromUrl: [{ src: 'invalid' }] });
     assert.match(response.error[0], /Invalid URL/);
     assert.equal(fetch.mock.callCount(), 0);
 });
 
  test('URL workflow reports failed persistence instead of returning an unsaved success', async t => {
     t.mock.method(globalThis, 'fetch', async () => new Response('file'));
-    await Workflows.init({ send: async data => data, crud: { send: async request => request.method === 'object.read'
+    await Workflow.init({ send: async data => data, crud: { send: async request => request.method === 'object.read'
         ? { object: [structuredClone(definition)] } : { error: ['Save failed'] } } });
-    const response = await Workflows.run({ method: 'workflow.fileFromUrl', organization_id: 'org', host: 'example.test', fileFromUrl: [{ src: 'https://example.test/a.txt' }] });
+    const response = await Workflow.run({ method: 'workflow.fileFromUrl', organization_id: 'org', host: 'example.test', fileFromUrl: [{ src: 'https://example.test/a.txt' }] });
     assert.deepEqual(response.error, ['Could not save imported file to files.']);
 });
 
 test('URL workflow returns the persisted record when an upsert also echoes the input', async t => {
     t.mock.method(globalThis, 'fetch', async () => new Response('file'));
-    await Workflows.init({ send: async data => data, crud: { send: async request => request.method === 'object.read'
+    await Workflow.init({ send: async data => data, crud: { send: async request => request.method === 'object.read'
         ? { object: [structuredClone(definition)] }
         : { object: [request.object, { ...request.object, _id: 'stored-id' }] } } });
-    const response = await Workflows.run({ method: 'workflow.fileFromUrl', organization_id: 'org', host: 'example.test', fileFromUrl: [{ src: 'https://example.test/a.txt', headers: { 'cache-control': 'private' } }] });
+    const response = await Workflow.run({ method: 'workflow.fileFromUrl', organization_id: 'org', host: 'example.test', fileFromUrl: [{ src: 'https://example.test/a.txt', headers: { 'cache-control': 'private' } }] });
     assert.equal(response.fileFromUrl._id, 'stored-id');
     assert.equal(response.fileFromUrl.headers['cache-control'], 'private');
     assert.equal(response.error, undefined);

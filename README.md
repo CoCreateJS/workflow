@@ -1,4 +1,4 @@
-# CoCreate Workflows
+# CoCreate Workflow
 
 Server-side execution of organization-scoped workflow records with CoCreate Evaluate's AST format.
 Workflow records are selected by their name in the socket method and are independent of API provider records.
@@ -41,11 +41,11 @@ Initialize the module with the CoCreate server. The method identifies the
 workflow; its same-named top-level property contains the input objects:
 
 ```js
-import Workflows from "@cocreate/workflows";
+import Workflow from "@cocreate/workflow";
 
-const workflows = await Workflows.init(Server);
-Server.socket.on("workflow", workflows.run);
-const result = await workflows.run({
+const workflow = await Workflow.init(Server);
+Server.socket.on("workflow", workflow.run);
+const result = await workflow.run({
   method: "workflow.notify-users",
   organization_id,
   host,
@@ -170,9 +170,9 @@ to query. The workflow uses `$payload.unique.0.unique-key` as the filter key and
 field mapping while the workflow uses a database-appropriate path, such as a
 dotted path that matches names inside an array.
 
-`unique-key` is not a reserved Workflows attribute and the client does not give
+`unique-key` is not a reserved Workflow attribute and the client does not give
 it special behavior. It is ordinary input metadata included in the submitted
-element attributes; the workflow AST decides how to use it. Workflows can accept
+element attributes; the workflow AST decides how to use it. Workflow elements can accept
 other metadata and values in the same way, use them to select arrays, keys,
 filters, or actions, and write the result back under the workflow's method key.
 That result can be a scalar, a data object, or an AST expression string. The

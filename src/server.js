@@ -147,7 +147,7 @@ async function executeWorkflowActions(actions, sandbox) {
 async function execute(payload = {}) {
 	try {
 		if (!server?.crud?.send) {
-			throw new Error("CoCreate Workflows has not been initialized with a server.");
+			throw new Error("CoCreate Workflow has not been initialized with a server.");
 		}
 
 		const methodParts = String(payload.method || "").split(".");
@@ -239,16 +239,16 @@ const API = { run, execute: executeInternal };
  */
 async function init(Server) {
 	if (!Server?.crud?.send) {
-		throw new Error("CoCreate Workflows requires Server.crud.send.");
+		throw new Error("CoCreate Workflow requires Server.crud.send.");
 	}
 	server = Server;
 	return API;
 }
 
-const Workflows = { init, run, execute: executeInternal };
+const Workflow = { init, run, execute: executeInternal };
 
 export { init, run, executeInternal as execute };
-export default Workflows;
+export default Workflow;
 
 /**
  *
@@ -261,7 +261,7 @@ export default Workflows;
 /**
  * Loads and executes organization-scoped workflow records using CoCreate Evaluate's AST format.
  *
- * @module workflows
+ * @module workflow
  * @environment server
  */
 
@@ -274,6 +274,6 @@ export default Workflows;
  * @environment server
  * @example
  * ```json
- * "Workflows"
+ * "Workflow"
  * ```
  */

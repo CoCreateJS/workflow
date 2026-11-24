@@ -2,14 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-import Workflows from '../src/server.js';
+import Workflow from '../src/server.js';
 import { getData } from '../../utils/src/modules/getData.js';
 import { setData } from '../../utils/src/modules/setData.js';
 
 test('generic workflow form maps URL input to a CoCreate File result controller', async t => {
     const definition = JSON.parse(fs.readFileSync(new URL('../demo/fileFromUrl.json', import.meta.url), 'utf8'));
     t.mock.method(globalThis, 'fetch', async () => new Response(Uint8Array.of(0, 255), { headers: { 'content-type': 'image/png' } }));
-    await Workflows.init({ crud: { send: async request => ({ object: [request.method === 'object.read' ? definition : request.object] }) } });
+    await Workflow.init({ crud: { send: async request => ({ object: [request.method === 'object.read' ? definition : request.object] }) } });
     const attributes = values => ({
         nodeType: 1,
         hasAttribute: name => Object.hasOwn(values, name.toLowerCase()),
@@ -41,7 +41,7 @@ test('generic workflow form maps URL input to a CoCreate File result controller'
         Socket: { send: async request => {
             assert.equal(request.method, 'workflow.fileFromUrl');
             assert.deepEqual(JSON.parse(JSON.stringify(request.fileFromUrl)), [{ src: 'https://example.test/image.png' }]);
-            return Workflows.run({ ...request, organization_id: 'org', host: 'example.test' });
+            return Workflow.run({ ...request, organization_id: 'org', host: 'example.test' });
         } }
     });
     await runWorkflow('fileFromUrl', { element: button, end: value => { ended = value; }, abort: error => assert.fail(JSON.stringify(error)) });

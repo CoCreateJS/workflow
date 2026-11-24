@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import Workflows from "../src/server.js";
+import Workflow from "../src/server.js";
 
 const uniqueWorkflow = JSON.parse(
 	await readFile(new URL("../demo/workflow.json", import.meta.url), "utf8")
@@ -40,7 +40,7 @@ function createServer(existingRecords) {
 }
 
 async function initializeWorkflow(server) {
-	const workflow = await Workflows.init(server);
+	const workflow = await Workflow.init(server);
 	server.on("workflow", workflow.run);
 }
 
@@ -73,7 +73,7 @@ test("workflow socket handler runs AST with workflow data at the named top-level
 
 test('workflow socket operators use server.send with top-level scope and preserve socket payload data', async () => {
     const sent = [];
-    await Workflows.init({
+    await Workflow.init({
         crud: { send: async () => ({ object: [{ name: 'notify', actions: {
             '$socket.send': { method: 'notification', organization_id: 'forged', host: 'forged.test', socket: { purpose: 'application data' } }
         } }] }) },
@@ -81,7 +81,7 @@ test('workflow socket operators use server.send with top-level scope and preserv
         socket: { send() { assert.fail('Workflow must use server.send'); } }
     });
     const envelope = { method: 'workflow.notify', organization_id: 'org', host: 'example.test', socket: { purpose: 'input data' } };
-    assert.equal(await Workflows.run(envelope), envelope);
+    assert.equal(await Workflow.run(envelope), envelope);
     assert.equal(envelope.error, undefined);
     assert.equal(sent[0].organization_id, 'org');
     assert.equal(sent[0].host, 'example.test');
@@ -91,12 +91,12 @@ test('workflow socket operators use server.send with top-level scope and preserv
 
 test('workflow scope is never inferred from an ordinary socket payload field', async () => {
     const sent = [];
-    await Workflows.init({
+    await Workflow.init({
         crud: { send() { assert.fail('Missing top-level scope must stop before lookup'); } },
         send: data => sent.push(data)
     });
     const envelope = { method: 'workflow.notify', socket: { organization_id: 'org', host: 'example.test' } };
-    const result = await Workflows.run(envelope);
+    const result = await Workflow.run(envelope);
     assert.match(result.error[0], /organization_id and host are required/);
     assert.equal(result.socket, envelope.socket);
     assert.equal(sent[0], envelope);
@@ -152,37 +152,37 @@ test("unique workflow rejects another match even when the first belongs to the c
 		organization_id: "org-1", host: "example.test",
 		unique: [{ array: "users", key: "email", value: "person@example.test", object: "current-user" }]
 	};
-	await Workflows.run(envelope);
+	await Workflow.run(envelope);
 	assert.equal(envelope.error, undefined);
 	assert.equal(envelope.unique, false);
 });
 
 test('execution and response-delivery failures accumulate on the payload without logging', async t => {
     t.mock.method(console, 'error', () => assert.fail('Workflow API failures belong on the payload'));
-    await Workflows.init({
+    await Workflow.init({
         crud: { send: async () => ({ object: [] }) },
         send() { throw Error('response unavailable'); }
     });
-    const response = await Workflows.run({ method: 'workflow.missing', organization_id: 'org', host: 'example.test', error: ['earlier failure'] });
+    const response = await Workflow.run({ method: 'workflow.missing', organization_id: 'org', host: 'example.test', error: ['earlier failure'] });
     assert.deepEqual(response.error, ['earlier failure', "Workflow 'missing' was not found.", 'response unavailable']);
 });
 
 test('AST execution failures append to the workflow payload error array', async t => {
     t.mock.method(console, 'error', () => assert.fail('Workflow API failures belong on the payload'));
-    await Workflows.init({
+    await Workflow.init({
         crud: { send: async () => ({ object: [{ name: 'fails', actions: { '$throw': 'AST action failed' } }] }) },
         send: async data => data
     });
-    const response = await Workflows.run({ method: 'workflow.fails', organization_id: 'org', host: 'example.test', error: ['earlier failure'] });
+    const response = await Workflow.run({ method: 'workflow.fails', organization_id: 'org', host: 'example.test', error: ['earlier failure'] });
     assert.deepEqual(response.error, ['earlier failure', 'AST action failed']);
 });
 
 test('response delivery error envelopes accumulate without duplicating the workflow errors', async () => {
-    await Workflows.init({
+    await Workflow.init({
         crud: { send: async () => ({ object: [{ name: 'ok', actions: {} }] }) },
         send: async () => ({ error: ['delivery rejected'] })
     });
-    const response = await Workflows.run({ method: 'workflow.ok', organization_id: 'org', host: 'example.test', error: ['earlier failure'] });
+    const response = await Workflow.run({ method: 'workflow.ok', organization_id: 'org', host: 'example.test', error: ['earlier failure'] });
     await Promise.resolve();
     assert.deepEqual(response.error, ['earlier failure', 'delivery rejected']);
 });

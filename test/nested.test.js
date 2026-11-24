@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import Workflows from '../src/server.js';
+import Workflow from '../src/server.js';
 
 async function initialize(child) {
     const requests = [];
@@ -24,7 +24,7 @@ async function initialize(child) {
         },
         createVM: child
     };
-    await Workflows.init({
+    await Workflow.init({
         crud: {
             async send(request) {
                 requests.push(structuredClone(request));
@@ -60,7 +60,7 @@ test('nested workflow returns outputs in platform scope and reserves reply routi
         socket: { organization_id: 'untrusted-org', host: 'untrusted.test' },
         orgConnected: [{ cluster_id: 'cluster-1' }]
     };
-    const response = await Workflows.run(envelope);
+    const response = await Workflow.run(envelope);
     assert.equal(response, envelope);
     assert.equal(response.error, undefined);
     assert.deepEqual(response.orgConnected[0].server, { _id: 'server-1', cluster_id: 'cluster-1' });
@@ -76,7 +76,7 @@ test('nested workflow returns outputs in platform scope and reserves reply routi
 
 test('a child error stops the parent before its remaining actions', async () => {
     const { sent } = await initialize({ name: 'createVM', enabled: false, actions: {} });
-    const response = await Workflows.run({
+    const response = await Workflow.run({
         method: 'workflow.orgConnected',
         organization_id: 'platform', host: 'platform.test',
         orgConnected: [{ cluster_id: 'cluster-1' }]
@@ -90,7 +90,7 @@ test('a child error stops the parent before its remaining actions', async () => 
 test('child errors accumulate on the original parent payload and preserve earlier errors', async () => {
     await initialize({ name: 'createVM', enabled: false, actions: {} });
     const error = ['earlier parent failure'];
-    const response = await Workflows.run({
+    const response = await Workflow.run({
         method: 'workflow.orgConnected', organization_id: 'platform', host: 'platform.test',
         orgConnected: [{ cluster_id: 'cluster-1' }], error
     });

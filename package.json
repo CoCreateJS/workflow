@@ -1,10 +1,10 @@
 {
-  "name": "@cocreate/workflows",
+  "name": "@cocreate/workflow",
   "version": "1.1.2",
   "description": "Declarative client actions and tenant-scoped server execution for CoCreate workflows.",
   "keywords": [
     "cocreate",
-    "workflows",
+    "workflow",
     "ast",
     "client",
     "server",
@@ -15,14 +15,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CoCreateJS/workflows.git"
+    "url": "git+https://github.com/CoCreateJS/workflow.git"
   },
   "author": "CoCreate LLC",
   "license": "AGPL-3.0",
   "bugs": {
-    "url": "https://github.com/CoCreateJS/workflows/issues"
+    "url": "https://github.com/CoCreateJS/workflow/issues"
   },
-  "homepage": "https://CoCreateJS.com/docs/workflows",
+  "homepage": "https://CoCreateJS.com/docs/workflow",
   "type": "module",
   "main": "./src/server.js",
   "browser": "./src/client.js",

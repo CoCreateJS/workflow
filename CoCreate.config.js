@@ -7,11 +7,11 @@ export default {
 			array: "files",
 			object: {
 				name: "index.html",
-				path: "/docs/workflows",
-				pathname: "/docs/workflows/index.html",
+				path: "/docs/workflow",
+				pathname: "/docs/workflow/index.html",
 				src: "{{./docs/index.html}}",
 				host: ["CoCreateJS.com", "general.CoCreateJS.com"],
-				directory: "workflows",
+				directory: "workflow",
 				"content-type": "{{content-type}}",
 				public: "true"
 			}

@@ -4,7 +4,7 @@ import { SocketClient as Socket } from "@cocreate/socket";
 import { evaluateAsync } from "@cocreate/evaluate/client";
 import { getData, setData } from "@cocreate/utils";
 
-const registeredWorkflows = new Set();
+const registeredWorkflowNames = new Set();
 
 function getWorkflowNames(element) {
 	return (element?.getAttribute("workflow") || "")
@@ -168,8 +168,8 @@ async function runWorkflow(name, action) {
 function registerWorkflow(name) {
 	if (!name) return;
 
-	if (!registeredWorkflows.has(name)) {
-		registeredWorkflows.add(name);
+	if (!registeredWorkflowNames.has(name)) {
+		registeredWorkflowNames.add(name);
 		Actions.init({
 			name,
 			callback: (action) => runWorkflow(name, action)
@@ -213,10 +213,10 @@ Observer.init({
 
 init();
 
-const WorkflowsClient = { init };
+const WorkflowClient = { init };
 
 export { init };
-export default WorkflowsClient;
+export default WorkflowClient;
 
 /**
  *
@@ -257,7 +257,7 @@ export default WorkflowsClient;
 /**
  * Loads and executes organization-scoped workflow records using CoCreate Evaluate's AST format.
  *
- * @module workflows
+ * @module workflow
  * @environment client
  */
 
@@ -311,6 +311,6 @@ export default WorkflowsClient;
  * @environment client
  * @example
  * ```json
- * "WorkflowsClient"
+ * "WorkflowClient"
  * ```
  */
