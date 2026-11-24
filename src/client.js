@@ -1,7 +1,7 @@
 import Actions from "@cocreate/actions";
 import Observer from "@cocreate/observer";
 import { SocketClient as Socket } from "@cocreate/socket";
-import { astAsync } from "@cocreate/ast/client";
+import { evaluateAsync } from "@cocreate/evaluate/client";
 import { getData, setData } from "@cocreate/utils";
 
 const registeredWorkflows = new Set();
@@ -44,7 +44,7 @@ async function resolveWorkflowResult(name, response, element) {
 	const result = response?.[name];
 	if (typeof result !== "string" || !result.trim().startsWith("$")) return result;
 
-	return astAsync({
+	return evaluateAsync({
 		executeAST: result,
 		node: element,
 		sandbox: {
@@ -255,7 +255,7 @@ export default WorkflowsClient;
  */
 
 /**
- * Loads and executes organization-scoped workflow records using CoCreate AST.
+ * Loads and executes organization-scoped workflow records using CoCreate Evaluate's AST format.
  *
  * @module workflows
  * @environment client

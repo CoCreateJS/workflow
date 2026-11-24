@@ -7,7 +7,7 @@
  * (at your option) any later version.
  ********************************************************************************/
 
-import { astAsync } from "@cocreate/ast/server";
+import { evaluateAsync } from "@cocreate/evaluate/server";
 
 let server;
 
@@ -122,7 +122,7 @@ async function executeWorkflowActions(actions, sandbox) {
 		: Object.entries(actions).map(([name, action]) => ({ [name]: action }));
 
 	for (const [index, step] of steps.entries()) {
-		const result = await astAsync({ executeAST: step, sandbox });
+		const result = await evaluateAsync({ executeAST: step, sandbox });
 		if (Array.isArray(results)) results[index] = result;
 		else if (result && typeof result === "object") {
 			Object.assign(results, result);
@@ -224,7 +224,12 @@ async function run(payload = {}) {
 	return payload;
 }
 
-const API = { run };
+/** Execute a workflow internally and return its payload without server.send. */
+async function executeInternal(payload = {}) {
+	return execute(payload);
+}
+
+const API = { run, execute: executeInternal };
 
 /**
  * Binds server services and returns the workflow handler for registration on the workflow socket event.
@@ -240,9 +245,9 @@ async function init(Server) {
 	return API;
 }
 
-const Workflows = { init, run };
+const Workflows = { init, run, execute: executeInternal };
 
-export { init, run };
+export { init, run, executeInternal as execute };
 export default Workflows;
 
 /**
@@ -254,7 +259,7 @@ export default Workflows;
  */
 
 /**
- * Loads and executes organization-scoped workflow records using CoCreate AST.
+ * Loads and executes organization-scoped workflow records using CoCreate Evaluate's AST format.
  *
  * @module workflows
  * @environment server

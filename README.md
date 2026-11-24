@@ -1,6 +1,6 @@
 # CoCreate Workflows
 
-Server-side execution of organization-scoped workflow records with CoCreate AST.
+Server-side execution of organization-scoped workflow records with CoCreate Evaluate's AST format.
 Workflow records are selected by their name in the socket method and are independent of API provider records.
 
 ## Workflow record
@@ -90,7 +90,7 @@ The server sandbox also provides `$fetch` and `$URL` for native server-side
 requests and URL parsing. File conversions are shared AST globals:
 `$encodeContent`, `$decodeContent`, `$getContentType`, `$getExtension`,
 `$getExtensions`, and `$isTextContentType`. Calls to async APIs are awaited by
-`astAsync`; methods such as `Response.arrayBuffer()` can be called using object
+`evaluateAsync`; methods such as `Response.arrayBuffer()` can be called using object
 AST, for example `{ "$actions.response.arrayBuffer": [] }`.
 
 ## URL file workflow
